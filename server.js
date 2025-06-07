@@ -1,44 +1,48 @@
 import express from 'express';
 import axios from 'axios';
 import { google } from 'googleapis';
-import bodyParser from 'body-parser';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { authenticate } from './utils/googleAuth.js';
 import { generateSpreadPdf } from './utils/generateSpreadPdf.js';
 import { Readable } from 'stream';
-import 'dotenv/config'
+import 'dotenv/config';
+
 const app = express();
 const PORT = 5000;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-app.use(bodyParser.json());
+// ✅ Use built-in JSON body parser
+app.use(express.json());
 
-// Utility to extract file ID from Google Drive share link
+// 🔧 Utility to extract file ID from Google Drive share link
 function extractFileId(link) {
   const match = link.match(/\/d\/([a-zA-Z0-9_-]+)/);
   return match ? match[1] : null;
 }
 
-// ✅ Clean up original Drive file name
+// 🔧 Sanitize filename from Drive
 function sanitizeFileName(name) {
   if (!name) return 'Processed_File.pdf';
-
   return name
-    .replace(/(_\d{8}_\d{6}(_\d+)?)+\.pdf$/i, '') // remove trailing _timestamp_0000.pdf
-    .replace(/\.pdf+$/i, '')                      // remove any trailing .pdf/.pdf.pdf
-    .trim() + '.pdf';                             // ensure one clean .pdf
+    .replace(/(_\d{8}_\d{6}(_\d+)?)+\.pdf$/i, '')
+    .replace(/\.pdf+$/i, '')
+    .trim() + '.pdf';
 }
 
-// ✅ Main endpoint
+// ✅ Handle preview processing
 app.post('/handle-preview', async (req, res) => {
-  console.log("i am here")
-  const { link, row } = req.body;
+  console.log("📩 Incoming request to /handle-preview");
+  console.log("🧾 Request body:", req.body);
 
-  if (!link || !row) {
-    return res.status(400).json({ error: 'Missing preview link or row number.' });
+  const link = req.body.link;
+  const row = parseInt(req.body.row, 10); // Ensure number type
+
+  if (!link || isNaN(row)) {
+    console.error("❌ Missing or invalid 'link' or 'row'");
+    return res.status(400).json({ error: 'Missing or invalid preview link or row number.' });
   }
 
   const fileId = extractFileId(link);
@@ -47,11 +51,11 @@ app.post('/handle-preview', async (req, res) => {
   }
 
   try {
-    // Step 1: Auth
+    // 🔐 Step 1: Auth
     const auth = await authenticate();
     const drive = google.drive({ version: 'v3', auth });
 
-    // Step 2: Get original file name from Drive
+    // 📄 Step 2: Get file name
     const fileMeta = await drive.files.get({
       fileId,
       fields: 'name'
@@ -60,26 +64,24 @@ app.post('/handle-preview', async (req, res) => {
     const rawName = fileMeta.data.name || `Processed_Row_${row}.pdf`;
     const originalName = sanitizeFileName(rawName);
 
-    // Step 3: Download public PDF
+    // 📥 Step 3: Download original PDF
     const downloadUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
     const response = await axios.get(downloadUrl, { responseType: 'arraybuffer' });
     const originalBuffer = Buffer.from(response.data);
 
-    // Step 4: Generate spread PDF
+    // 🖨 Step 4: Process PDF
     const processedBuffer = await generateSpreadPdf(originalBuffer);
 
-    // Step 5: Upload to Google Drive folder
+    // 📤 Step 5: Upload processed file
     const fileMetadata = {
       name: originalName,
-      parents: ['1TGTQSdxLcewHaa8MSCs6DqHV1bcyDwq0'] // 🔁 Replace with your folder ID
+      parents: ['1TGTQSdxLcewHaa8MSCs6DqHV1bcyDwq0'] // Replace with your folder ID
     };
 
     const media = {
-  mimeType: 'application/pdf',
-  body: Readable.from([processedBuffer])
-
-};
-
+      mimeType: 'application/pdf',
+      body: Readable.from([processedBuffer])
+    };
 
     const uploadRes = await drive.files.create({
       resource: fileMetadata,
@@ -89,7 +91,7 @@ app.post('/handle-preview', async (req, res) => {
 
     const uploadedFileId = uploadRes.data.id;
 
-    // Step 6: Make the uploaded file public
+    // 🔓 Step 6: Make file public
     await drive.permissions.create({
       fileId: uploadedFileId,
       requestBody: {
@@ -99,19 +101,25 @@ app.post('/handle-preview', async (req, res) => {
     });
 
     const publicUrl = `https://drive.google.com/file/d/${uploadedFileId}/view?usp=sharing`;
-
     console.log(`✅ Uploaded & Shared File for row ${row}: ${publicUrl}`);
-      res.json({
+
+    res.json({
       link: publicUrl,
       row: row
-  });
+    });
+
   } catch (err) {
-    console.error('❌ Failed to handle preview:', err.message);
-    res.status(500).json({ error: 'Failed to process and upload PDF.' });
+    console.error('❌ Failed to handle preview:\n', err);
+    res.status(500).json({ error: 'Failed to process and upload PDF.', detail: err.message });
   }
 });
 
-// Start the server
+// ✅ Optional: health check route
+app.get('/health', (req, res) => {
+  res.send('Server is alive!');
+});
+
+// 🚀 Start server
 app.listen(PORT, () => {
   console.log(`✅ Server running at http://localhost:${PORT}`);
 });

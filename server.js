@@ -1,3 +1,54 @@
+/*
+ * ===============================================
+ * Project: PDF Processing and Google Drive Upload
+ * ===============================================
+ *
+ * Author       : Rishabh Garai
+ * Email        : rishabhgarai33@gmail.com
+ *
+ * Description  : Express server to handle PDF downloads from Google Drive,
+ *                process PDFs using custom PDF generation utility, and
+ *                upload processed PDFs back to Google Drive with public access.
+ *
+ * External Dependencies:
+ * -----------------------------------------------
+ * express       : Node.js web server framework
+ * axios         : HTTP client for handling HTTP requests
+ * googleapis    : Google API client for Drive interactions
+ * dotenv        : Loads environment variables from .env
+ *
+ * Custom Modules:
+ * -----------------------------------------------
+ * ./utils/googleAuth.js        : Handles Google API authentication
+ * ./utils/generateSpreadPdf.js : Custom PDF processing module
+ *
+ * Node.js Built-in Modules:
+ * -----------------------------------------------
+ * path          : Utilities for file and directory paths
+ * url           : Utilities for URL resolution and parsing
+ * stream        : Utilities for handling stream operations
+ *
+ * Utility Functions:
+ * -----------------------------------------------
+ * extractFileId(link)          : Extracts Google Drive file ID from a URL
+ * sanitizeFileName(name)       : Cleans filenames for safe uploading
+ *
+ * API Endpoints:
+ * -----------------------------------------------
+ * POST /handle-preview         : Processes incoming PDF links, generates processed PDFs,
+ *                                uploads to Google Drive, and makes files publicly accessible.
+ * GET  /health                 : Health check endpoint to confirm server status
+ *
+ * Server Details:
+ * -----------------------------------------------
+ * Port                         : 5000
+ * Start command                : node <filename>
+ *
+ * Last Modified : 12 June 2025
+ * Modified By   : Rishabh Garai
+ * ===============================================
+ */
+
 import express from 'express';
 import axios from 'axios';
 import { google } from 'googleapis';

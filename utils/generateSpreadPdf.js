@@ -1,3 +1,35 @@
+/*
+ * ===============================================
+ * Module        : generateSpreadPdf.js
+ * ===============================================
+ *
+ * Author        : Rishabh Garai
+ * Email         : rishabhgarai33@gmail.com
+ *
+ * Description   : Generates a print-ready spread-format PDF from a given buffer.
+ *                 Pairs original pages into spreads, adds bleed, margins, and wraps
+ *                 them into a centered padded layout for print compatibility.
+ *
+ * External Dependencies:
+ * -----------------------------------------------
+ * pdf-lib                : PDF manipulation library
+ *
+ * Custom Modules:
+ * -----------------------------------------------
+ * ./createSpreadPage.js : Function to render spread pages with trim guides
+ *
+ * Function:
+ * -----------------------------------------------
+ * generateSpreadPdf(buffer)
+ * - Loads original PDF buffer
+ * - Rearranges pages into defined spread pairs
+ * - Embeds pages into spread layout with bleed and margins
+ * - Adds a wrapper layout for final print-safe dimensions
+ *
+ * Last Modified : 12 June 2025
+ * Modified By   : Rishabh Garai
+ * ===============================================
+ */
 import { PDFDocument } from 'pdf-lib';
 import { createSpreadPage } from './createSpreadPage.js';
 

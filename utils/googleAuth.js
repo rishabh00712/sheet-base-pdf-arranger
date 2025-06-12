@@ -1,3 +1,34 @@
+/*
+ * ===============================================
+ * Module        : googleAuth.js
+ * ===============================================
+ *
+ * Author        : Rishabh Garai
+ * Email         : rishabhgarai33@gmail.com
+ *
+ * Description   : Authenticates a service account with Google APIs using
+ *                 credentials stored as a base64-encoded environment variable.
+ *                 Returns an authorized Google API client for Drive operations.
+ *
+ * External Dependencies:
+ * -----------------------------------------------
+ * googleapis             : Google API client library
+ *
+ * Function:
+ * -----------------------------------------------
+ * authenticate()
+ * - Decodes base64 service account credentials
+ * - Instantiates and returns an authenticated Google client
+ * - Validates token generation via JWT
+ *
+ * Environment Variables:
+ * - GOOGLE_CREDENTIALS_BASE64 : base64-encoded service account credentials
+ *
+ * Last Modified : 12 June 2025
+ * Modified By   : Rishabh Garai
+ * ===============================================
+ */
+
 import { google } from 'googleapis';
 
 export async function authenticate() {

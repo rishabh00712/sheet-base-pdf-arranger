@@ -1,3 +1,29 @@
+/*
+ * ===============================================
+ * Module        : drawCutMarks.js
+ * ===============================================
+ *
+ * Author        : Rishabh Garai
+ * Email         : rishabhgarai33@gmail.com
+ *
+ * Description   : Draws cut marks (trim lines) around the edges of a PDF page
+ *                 for accurate print trimming using the specified bleed.
+ *
+ * External Dependencies:
+ * -----------------------------------------------
+ * pdf-lib                : PDF manipulation library
+ *
+ * Function:
+ * -----------------------------------------------
+ * drawCutMarks(page, width, height, bleed)
+ * - Draws horizontal and vertical guide lines at each corner
+ *   based on the bleed margin to guide cutting after print.
+ *
+ * Last Modified : 12 June 2025
+ * Modified By   : Rishabh Garai
+ * ===============================================
+ */
+
 import { rgb } from 'pdf-lib';
 
 export function drawCutMarks(page, width, height, bleed) {
